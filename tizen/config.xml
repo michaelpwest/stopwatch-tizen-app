@@ -8,4 +8,5 @@
 	<description>Stopwatch app for Tizen wearable devices.</description>
 	<author href="https://github.com/michaelpwest" email="michaelpwest@users.noreply.github.com">Michael West</author>
 	<tizen:profile name="wearable"/>
+	<tizen:privilege name="http://tizen.org/privilege/power"/>
 </widget>
