@@ -58,5 +58,13 @@ module.exports = {
 		"vue/attribute-hyphenation": [
 			"off",
 		],
+		"vue/html-indent": [
+			"error",
+			"tab",
+		],
+		"vue/script-indent": [
+			"error",
+			"tab",
+		],
 	},
 };
