@@ -2,7 +2,10 @@
 	<section>
 		<div class="music-player">
 			<div class="actions">
-				<div class="previous-track">
+				<div
+					class="previous-track"
+					@click="changeTrack(-1)"
+				>
 					<i class="fas fa-step-backward" />
 				</div>
 				<div
@@ -19,7 +22,10 @@
 				>
 					<i class="fas fa-pause" />
 				</div>
-				<div class="next-track">
+				<div
+					class="next-track"
+					@click="changeTrack(1)"
+				>
 					<i class="fas fa-step-forward" />
 				</div>
 			</div>
@@ -41,12 +47,16 @@
 </template>
 
 <script>
+const moment = require("moment");
+
 export default {
 	data() {
 		return {
 			isPlaying: false,
 			playlist: [],
 			currentMusicTrack: null,
+			stepLastTime: 0,
+			stepCurrentTime: 0,
 		};
 	},
 	mounted() {
@@ -99,7 +109,10 @@ export default {
 						path: item.contentURI,
 					});
 				});
-				this.currentMusicTrack = 0;
+
+				setTimeout(() => {
+					this.changeTrack(1);
+				}, 1000);
 			} catch (error) {
 				alert(error.message);
 			}
@@ -107,6 +120,10 @@ export default {
 		playButton() {
 			try {
 				if (this.playlist.length) {
+					// Step.
+					this.stepLastTime = moment().valueOf();
+					requestAnimationFrame(this.step);
+
 					if (!this.isPlaying) {
 						// Play music track.
 						this.isPlaying = true;
@@ -117,6 +134,48 @@ export default {
 						this.$refs.audio.pause();
 					}
 				}
+			} catch (error) {
+				alert(error.message);
+			}
+		},
+		changeTrack(direction) {
+			try {
+				if (this.playlist.length) {
+					if (direction == -1 && this.$refs.audio.currentTime > 2) {
+						// Start current music track again if more than 2 seconds have played.
+						this.$refs.audio.currentTime = 0;
+					} else {
+						// Randomly change music track.
+						this.currentMusicTrack = (Math.floor(Math.random() * (this.playlist.length)) + 1) - 1;
+						if (this.isPlaying) {
+							setTimeout(() => {
+								// Play new music track.
+								this.isPlaying = false;
+								this.playButton();
+							}, 0);
+						}
+					}
+				}
+			} catch (error) {
+				alert(error.message);
+			}
+		},
+		step() {
+			try {
+				this.stepCurrentTime = moment().valueOf();
+				if (this.stepCurrentTime - this.stepLastTime >= 1000) {
+					this.stepLastTime = this.stepCurrentTime;
+
+					if (this.isPlaying) {
+						// Check if current music track has finished and start next music track if it has finished.
+						if (this.$refs.audio.ended) {
+							this.changeTrack(1);
+						}
+					}
+				}
+
+				// Step.
+				requestAnimationFrame(this.step);
 			} catch (error) {
 				alert(error.message);
 			}
