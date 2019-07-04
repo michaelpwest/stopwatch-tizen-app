@@ -148,7 +148,7 @@ export default {
 }
 .start, .resume, .stop, .time, .clock, .reset {
 	position: absolute;
-	top: 50%;
+	top: 30%;
 	width: 360px;
 }
 .start, .resume, .stop, .clock, .reset {
