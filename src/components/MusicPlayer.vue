@@ -31,7 +31,7 @@
 			</div>
 			<div
 				v-if="playlist[currentMusicTrack]"
-				class="music-track-title"
+				class="music-track-title ui-marquee"
 			>
 				{{ playlist[currentMusicTrack].title }}
 			</div>
@@ -57,6 +57,7 @@ export default {
 			currentMusicTrack: null,
 			stepLastTime: 0,
 			stepCurrentTime: 0,
+			elementMarquee: null,
 		};
 	},
 	mounted() {
@@ -125,6 +126,9 @@ export default {
 			try {
 				// Load audio when music track is changed.
 				this.$refs.audio.load();
+
+				// Setup marquee element.
+				this.setupMarquee();
 			} catch (error) {
 				alert(error.message);
 			}
@@ -197,6 +201,27 @@ export default {
 				alert(error.message);
 			}
 		},
+		setupMarquee() {
+			try {
+				if (this.elementMarquee) {
+					// Destroy previous marquee element.
+					this.elementMarquee.destroy();
+				}
+
+				// Add marquee to element.
+				const marquee = document.querySelector(".ui-marquee");
+				if (marquee) {
+					this.elementMarquee = new tau.widget.Marquee(marquee, { // eslint-disable-line
+						delay: 1000,
+						iteration: "infinite",
+						marqueeStyle: "endToEnd",
+					});
+					this.elementMarquee.start();
+				}
+			} catch (error) {
+				alert(error.message);
+			}
+		},
 		step() {
 			try {
 				this.stepCurrentTime = moment().valueOf();
@@ -243,6 +268,7 @@ export default {
 	position: absolute;
 	top: 75%;
 	white-space: nowrap;
-	width: 360px;
+	width: 240px;
+	margin-left: 60px;
 }
 </style>
