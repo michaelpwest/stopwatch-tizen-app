@@ -72,6 +72,32 @@ export default {
 					filter,
 					sortMode
 				);
+
+				// Handle media keys.
+				tizen.mediakey.setMediaKeyEventListener({ // eslint-disable-line
+					onpressed: (key) => {
+						switch (key) {
+						case "MEDIA_PLAY":
+						case "MEDIA_PAUSE":
+							try {
+								this.playButton();
+							} catch (error) {
+								alert(error.message);
+							}
+							break;
+						case "MEDIA_NEXT":
+						case "MEDIA_PREVIOUS":
+							try {
+								this.changeTrack(key == "MEDIA_NEXT" ? 1 : -1);
+							} catch (error) {
+								alert(error.message);
+							}
+							break;
+						default:
+							break;
+						}
+					},
+				});
 			} else {
 				// Get all music tracks from the public folder (allows testing in the browser).
 				this.setupPlaylist([
@@ -85,6 +111,12 @@ export default {
 					},
 				]);
 			}
+
+			// Handle rotary event.
+			document.addEventListener("rotarydetent", this.changeTrack);
+
+			// Handle back button event.
+			document.addEventListener("tizenhwkey", this.playButton);
 		} catch (error) {
 			alert(error.message);
 		}
@@ -140,6 +172,11 @@ export default {
 		},
 		changeTrack(direction) {
 			try {
+				// Determine direction based on button push or rotary event direction.
+				if (direction.detail && direction.detail.direction) {
+					direction = direction.detail.direction == "CW" ? 1 : -1;
+				}
+
 				if (this.playlist.length) {
 					if (direction == -1 && this.$refs.audio.currentTime > 2) {
 						// Start current music track again if more than 2 seconds have played.
