@@ -42,6 +42,18 @@
 			>
 				<source :src="playlist[currentMusicTrack].path">
 			</audio>
+			<div class="music-track-current-time">
+				{{ currentTime }}
+			</div>
+			<div class="music-track-duration">
+				{{ duration }}
+			</div>
+			<progress
+				id="circleprogress"
+				class="ui-circle-progress"
+				max="100"
+				value="0"
+			/>
 		</div>
 	</section>
 </template>
@@ -55,8 +67,11 @@ export default {
 			isPlaying: false,
 			playlist: [],
 			currentMusicTrack: null,
+			currentTime: null,
+			duration: null,
 			stepLastTime: 0,
 			stepCurrentTime: 0,
+			progressBar: null,
 			elementMarquee: null,
 		};
 	},
@@ -122,6 +137,18 @@ export default {
 			alert(error.message);
 		}
 
+		// Setup music track progress bar.
+		setTimeout(() => {
+			try {
+				const progressBar = document.querySelector(".ui-circle-progress");
+				this.progressBar = new tau.widget.CircleProgressBar(progressBar, { // eslint-disable-line
+					size: "full",
+				});
+			} catch (error) {
+				alert(error.message);
+			}
+		}, 1000);
+
 		this.$watch("currentMusicTrack", function() {
 			try {
 				// Load audio when music track is changed.
@@ -181,6 +208,13 @@ export default {
 					direction = direction.detail.direction == "CW" ? 1 : -1;
 				}
 
+				// Reset current music track progress time.
+				this.currentTime = null;
+				this.duration = null;
+				if (this.progressBar) {
+					this.progressBar.value(0);
+				}
+
 				if (this.playlist.length) {
 					if (direction == -1 && this.$refs.audio.currentTime > 2) {
 						// Start current music track again if more than 2 seconds have played.
@@ -229,6 +263,18 @@ export default {
 					this.stepLastTime = this.stepCurrentTime;
 
 					if (this.isPlaying) {
+						// Update current music track progress bar.
+						const currentTime = Math.ceil(this.$refs.audio.currentTime);
+						const duration = Math.ceil(this.$refs.audio.duration);
+						const progress = Math.ceil(currentTime / duration * 100);
+						this.progressBar.value(progress);
+
+						// Update current music track progress time.
+						if (currentTime >= 0 && duration >= 0) {
+							this.currentTime = moment.utc(currentTime * 1000).format("mm:ss");
+							this.duration = moment.utc(duration * 1000).format("mm:ss");
+						}
+
 						// Check if current music track has finished and start next music track if it has finished.
 						if (this.$refs.audio.ended) {
 							this.changeTrack(1);
@@ -270,5 +316,21 @@ export default {
 	white-space: nowrap;
 	width: 240px;
 	margin-left: 60px;
+}
+.music-track-current-time, .music-track-duration {
+	color: #12B4FF;
+	font-size: 0.6em;
+	line-height: 20px;
+	margin-top: -10px;
+	position: absolute;
+	top: 50%;
+}
+.music-track-current-time {
+	left: 0;
+	transform: rotate(-90deg);
+}
+.music-track-duration {
+	right: 0;
+	transform: rotate(90deg);
 }
 </style>
